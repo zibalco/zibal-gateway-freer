@@ -1,13 +1,17 @@
-<?
+<?php
 /*
+Zibal.ir gateway plugin
   Virtual Freer
-	zibal plugin
+  http://freer.ir/virtual
+
+  Copyright (c) 2019
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License v3 (http://www.gnu.org/licenses/gpl-3.0.html)
   as published by the Free Software Foundation.
 */
 	//-- اطلاعات کلی پلاگین
-	$pluginData[zibalzb n][type] = 'payment';
+	$pluginData[zibal][type] = 'payment';
 	$pluginData[zibal][name] = 'درگاه زیبال';
 	$pluginData[zibal][uniq] = 'zibal';
 	$pluginData[zibal][description] = 'مخصوص پرداخت با دروازه پرداخت <a href="http://zibal.ir">زیبال</a>';
@@ -25,9 +29,7 @@
 	function gateway__zibal($data)
 	{
 		global $config,$db,$smarty;
-		include_once('include/libs/nusoap.php');
 		$merchantID 	= trim($data[merchant]);
-		$amount 		= round($data[amount]/10);
 		$invoice_id		= $data[invoice_id];
 		$callBackUrl 	= $data[callback];
 		
@@ -41,12 +43,12 @@
 );
 $res = postToZibal('request', $parameters);
 	
-		if ($res->result == 100)
+		if ($res['result'] == 100)
 		{
-			$update[payment_rand]		= $res->trackId;
+			$update[payment_rand]		= $res['trackId'];
 			$sql = $db->queryUpdate('payment', $update, 'WHERE `payment_rand` = "'.$invoice_id.'" LIMIT 1;');
 			$db->execute($sql);
-			header('location: https://gateway.zibal.ir/start/' . $res->trackId.'/direct');
+			header('location: https://gateway.zibal.ir/start/' . $res['trackId'].'/direct');
 			exit;
 		}
 		else
@@ -81,19 +83,19 @@ $res = postToZibal('request', $parameters);
 			);
 			if ($payment[payment_status] == 1)
 			{
-				if ($res->result == 100)//-- موفقیت آمیز
+				if ($res['result'] == 100)//-- موفقیت آمیز
 				{
 					//-- آماده کردن خروجی
 					$output[status]		= 1;
 					$output[res_num]	= $trackId;
-					$output[ref_num]	= $res->refNumber;
+					$output[ref_num]	= $res['refNumber'];
 					$output[payment_id]	= $payment[payment_id];
 				}
 				else
 				{
 					//-- در تایید پرداخت مشکلی به‌وجود آمده است‌
 					$output[status]	= 0;
-					$output[message]= 'پرداخت توسط زیبال تایید نشد‌.'.$res['Status'];
+					$output[message]= 'پرداخت توسط زیبال تایید نشد‌.'.$res['result'];
 				}
 			}
 			else
@@ -129,5 +131,6 @@ function postToZibal($path, $parameters)
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response  = curl_exec($ch);
     curl_close($ch);
-    return json_decode($response);
+    return json_decode($response,true);
 }
+
