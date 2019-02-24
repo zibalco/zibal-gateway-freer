@@ -67,9 +67,9 @@ $res = postToZibal('request', $parameters);
 	function callback__zibal($data)
 	{
 		global $db,$get;
-		$trackId 	= $_POST['trackId'];
-		$ref_id = $_POST['refNumber'];
-		if ($_POST['success'] == '1')
+		$trackId 	= $_GET['trackId'];
+
+		if ($_GET['success'] == '1')
 		{
 			$res = postToZibal('request', $parameters);
 			$merchantID = $data[merchant];
@@ -122,7 +122,7 @@ $res = postToZibal('request', $parameters);
  */
 function postToZibal($path, $parameters)
 {
-    $url = 'https://gateway.zibal.ir/'.$path;
+    $url = 'https://gateway.zibal.ir/v1/'.$path;
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
